@@ -1,0 +1,51 @@
+﻿ 	@using TXTextControl.Web.MVC.DocumentViewer
+	@using System.Text
+	        
+	<div style="width: 800px; height: 600px;">
+	    
+	@Html.TXTextControl().DocumentViewer(settings => {
+	    settings.DocumentPath = "App_Data/template.tx";
+	    settings.Dock = DocumentViewerSettings.DockStyle.Fill;
+	}).Render()
+    
+	</div>
+
+	<br />
+
+	<input value="Place annotations as images" type="button" id="storeAnnotations" onclick="storeAnnotations()" />
+	
+	<script>
+	
+	    window.addEventListener("documentViewerLoaded", function () {
+	        TXDocumentViewer.annotations.showToolbar(true);
+	    });
+
+		function storeAnnotations() {
+
+            var annotations = TXDocumentViewer.annotations.export();
+
+            var obj = JSON.parse(annotations);
+			var serviceURL = "@Url.Action("MergeAnnotations", "Home")";
+
+			// send document to controller
+            $.ajax({
+                type: "POST",
+                url: serviceURL,
+                contentType: "application/json",
+                dataType: "json",
+                data: JSON.stringify(obj),
+				success: successFunc,
+				error: errorFunc
+			});
+
+		}
+
+		function successFunc(data, status) {
+            TXDocumentViewer.loadDocument(data.data, "results.tx");
+		}
+
+		function errorFunc() {
+			alert("error");
+		}
+	
+	</script>
